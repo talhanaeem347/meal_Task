@@ -1,71 +1,55 @@
+import 'dart:developer';
 import 'package:flutter/cupertino.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meal_task/bloc/meal_bloc/meal_bloc.dart';
 import 'package:meal_task/utils/exports.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({super.key});
-
-  final List<Map<String, dynamic>> meals = [
-    {
-      'name': 'First Meal',
-      'icon': CupertinoIcons.sunrise_fill,
-      'meals': [
-        {
-          'name': 'Spicy Bacon Cheese Toast',
-          'calories': 200,
-        },
-        {
-          'name': 'Almond Milk',
-          'calories': 100,
-        }
-      ]
-    },
-    {
-      'name': 'Second Meal',
-      'icon': FontAwesomeIcons.clone,
-    },
-    {
-      'name': 'Third Meal',
-      'icon': CupertinoIcons.sun_max_fill,
-    },
-    {
-      'name': 'Fourth Meal',
-      'icon': CupertinoIcons.sun_haze_fill,
-    },
-    {
-      'name': 'Fifth Meal',
-      'icon': Icons.nightlight,
-    },
-  ];
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Meals',
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.favorite_border),
+    return BlocBuilder<MealBloc, MealState>(
+      bloc: context.read<MealBloc>(),
+      builder: (context, state) {
+        log('build method called');
+        return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Meals',
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.favorite_border),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(CupertinoIcons.ellipsis),
+                )
+              ],
             ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(CupertinoIcons.ellipsis),
-            )
-          ],
-        ),
-        body: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          itemBuilder: (context, index) {
-            return MealDetailTile(
-              meal: meals[index],
-            );
-          },
-          shrinkWrap: true,
-          itemCount: 5,
-        ));
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    physics: const NeverScrollableScrollPhysics(),
+
+                    itemBuilder: (context, index) {
+                      return MealDetailTile(
+                        meal: state.meals[index],
+                      );
+                    },
+
+                    shrinkWrap: true,
+                    itemCount: state.meals.length,
+                  ),
+                ],
+              ),
+            ));
+      },
+    );
   }
 }
 
@@ -79,14 +63,13 @@ class MealDetailTile extends StatefulWidget {
 }
 
 class _MealDetailTileState extends State<MealDetailTile> {
-  List<Map<String, dynamic>>? meals;
-  bool show = false;
+  late List<Map<String, dynamic>> products;
   bool isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    meals = widget.meal['meals'] as List<Map<String, dynamic>>?;
+    products = widget.meal['products'] as List<Map<String, dynamic>>;
   }
 
   @override
@@ -101,33 +84,30 @@ class _MealDetailTileState extends State<MealDetailTile> {
         children: [
           MealTitleWidget(
             meal: widget.meal,
-            onAdd: () {
-              setState(() {
-                show = !show;
-              });
-            },
+
             button: Row(
               children: [
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      color: meals != null
+                      color: products.isNotEmpty
                           ? isEditing
                               ? AppColors.green
                               : AppColors.textBlack
                           : AppColors.textWhite,
                     ),
-                    backgroundColor:
-                        meals != null ? AppColors.textWhite : AppColors.gray,
-                    foregroundColor: meals != null
+                    backgroundColor: products.isNotEmpty
+                        ? AppColors.textWhite
+                        : AppColors.gray,
+                    foregroundColor: products.isNotEmpty
                         ? isEditing
                             ? AppColors.green
                             : AppColors.textBlack
                         : AppColors.textWhite,
                   ),
-                  onPressed: () {},
+                  onPressed: () => isEditing ? _saveMeal() : _editMeal(),
                   child: Text(
-                      meals != null
+                      products.isNotEmpty
                           ? isEditing
                               ? 'save'
                               : 'Edit'
@@ -137,7 +117,7 @@ class _MealDetailTileState extends State<MealDetailTile> {
                         applyHeightToLastDescent: false,
                       )),
                 ),
-                if (!isEditing && meals != null)
+                if (!isEditing && products.isNotEmpty)
                   const Icon(
                     Icons.bookmark_outline_rounded,
                     color: Colors.grey,
@@ -145,9 +125,8 @@ class _MealDetailTileState extends State<MealDetailTile> {
                   ),
               ],
             ),
-            // onButtonTap: () {},
           ),
-          if (show && meals != null)
+          if (products.isNotEmpty)
             Container(
               width: double.infinity,
               margin: const EdgeInsets.all(10),
@@ -168,16 +147,16 @@ class _MealDetailTileState extends State<MealDetailTile> {
                         children: [
                           Expanded(
                               child: Text(
-                            meals![index]['name'],
+                            products[index]['name'],
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge
                                 ?.copyWith(color: AppColors.textGrey),
                           )),
-                          Text('${meals![index]['calories']} Cals',
+                          Text('${products[index]['calories']} Cals',
                               style: Theme.of(context).textTheme.bodyLarge),
                           IconButton(
-                              onPressed: () {},
+                              onPressed: () => isEditing? context.read<MealBloc>().add(RemoveProduct(widget.meal['name'], index)): null,
                               icon: Icon(
                                 !isEditing
                                     ? Icons.arrow_circle_right_rounded
@@ -192,7 +171,8 @@ class _MealDetailTileState extends State<MealDetailTile> {
                     separatorBuilder: (context, index) {
                       return const Divider();
                     },
-                    itemCount: meals!.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: products.length,
                     shrinkWrap: true,
                   ),
                   const Divider(),
@@ -205,7 +185,7 @@ class _MealDetailTileState extends State<MealDetailTile> {
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(color: AppColors.green))),
-                      Text('${sumCalories(meals!)} Cals',
+                      Text('${sumCalories(products)} Cals',
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge
@@ -223,6 +203,18 @@ class _MealDetailTileState extends State<MealDetailTile> {
     );
   }
 
+  _editMeal() {
+    setState(() {
+      isEditing = true;
+    });
+  }
+
+  _saveMeal() {
+    setState(() {
+      isEditing = false;
+    });
+  }
+
   int sumCalories(List<Map<String, dynamic>> meals) {
     int totalCalories = 0;
     for (var meal in meals) {
@@ -234,25 +226,24 @@ class _MealDetailTileState extends State<MealDetailTile> {
 
 class MealTitleWidget extends StatelessWidget {
   final Map<String, dynamic> meal;
-  final VoidCallback onAdd;
   final Widget button;
 
   const MealTitleWidget({
     super.key,
     required this.meal,
-    required this.onAdd,
     required this.button,
   });
 
   @override
   Widget build(BuildContext context) {
+    log('row build method called');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 70,
-          height: 70,
+          width: 60,
+          height: 60,
           margin: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(15)),
@@ -270,7 +261,7 @@ class MealTitleWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(
-                height: 15,
+                height: 12,
               ),
               Text(
                 meal['name'] as String,
@@ -291,10 +282,10 @@ class MealTitleWidget extends StatelessWidget {
             ),
           ),
           child: InkWell(
-            onTap: () => onAdd(),
+            onTap: () => context.read<MealBloc>().add(AddProduct(meal['name'])),
             child: Container(
-                width: 50,
-                height: 60,
+                width: 40,
+                height: 50,
                 margin: const EdgeInsets.only(left: 10, bottom: 10),
                 decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
