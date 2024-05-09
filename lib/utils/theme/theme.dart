@@ -1,4 +1,5 @@
 import 'package:meal_task/utils/exports.dart';
+import 'package:meal_task/utils/theme/custom_theme/icon_button.dart';
 
 class AppTheme {
   AppTheme._();
@@ -18,6 +19,7 @@ class AppTheme {
     outlinedButtonTheme: AppOutlinedButtonTheme.lightTheme,
     inputDecorationTheme: AppTextFormFieldTheme.lightTheme,
     textButtonTheme: AppTextButtonTheme.lightTheme,
+    iconButtonTheme: AppIconButtonTheme.lightTheme,
   );
 
   }
