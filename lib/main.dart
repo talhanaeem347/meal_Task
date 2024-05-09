@@ -21,9 +21,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Meal Task',
       theme: AppTheme.lightTheme,
-      home: HomePage(),
+      home: const HomePage(),
 
     );
   }
