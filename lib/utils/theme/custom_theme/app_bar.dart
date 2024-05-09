@@ -7,13 +7,12 @@ class AppAppBarTheme {
   static const AppBarTheme lightTheme = AppBarTheme(
     elevation: 0,
     scrolledUnderElevation: 0,
-    centerTitle: true,
     backgroundColor: AppColors.primaryColor,
     surfaceTintColor: Colors.transparent,
-    iconTheme: IconThemeData(color: Colors.black, size: 24),
-    actionsIconTheme: IconThemeData(color: AppColors.textBlack, size: 24),
+    iconTheme: IconThemeData(color: AppColors.textBlack, size: 24),
+    actionsIconTheme: IconThemeData(color: AppColors.textBlack, size: 24,),
     titleTextStyle: TextStyle(
-      fontSize: 18,
+      fontSize: 24,
       fontWeight: FontWeight.w600,
       color: AppColors.textBlack,
     ),

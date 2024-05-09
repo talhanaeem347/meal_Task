@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_task/utils/constants/color.dart';
 
 class AppOutlinedButtonTheme {
   AppOutlinedButtonTheme._();
@@ -6,14 +7,15 @@ class AppOutlinedButtonTheme {
   static OutlinedButtonThemeData lightTheme = OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
       elevation: 0,
-      foregroundColor: Colors.black,
+      foregroundColor: AppColors.textBlack,
       side: const BorderSide(
-        color: Colors.black,
+        color: AppColors.textBlack,
         width: 1,
       ),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       textStyle: const TextStyle(
-        fontSize: 16,
+        fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
       shape: RoundedRectangleBorder(
